@@ -153,6 +153,7 @@ export class EnvironmentImpl implements Environment {
     );
 
     this.debugRenderTree?.begin();
+    this.provideConsumeContextTree?.begin();
 
     this[TRANSACTION] = new TransactionImpl();
   }
@@ -187,6 +188,7 @@ export class EnvironmentImpl implements Environment {
     transaction.commit();
 
     this.debugRenderTree?.commit();
+    this.provideConsumeContextTree?.commit();
 
     this.delegate.onTransactionCommit();
   }

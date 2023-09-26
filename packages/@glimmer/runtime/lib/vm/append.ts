@@ -69,6 +69,7 @@ import {
   TryOpcode,
   VMState,
 } from './update';
+import { ProvideConsumeContextUpdateOpcode } from '../compiled/opcodes/component';
 
 /**
  * This interface is used by internal opcodes, and is more stable than
@@ -448,14 +449,14 @@ export default class VM implements PublicVM, InternalVM {
   private didEnter(opcode: BlockOpcode) {
     this.associateDestroyable(opcode);
     this[DESTROYABLE_STACK].push(opcode);
-    this.addToProvideConsumeContextStack(opcode);
     this.updateWith(opcode);
     this.pushUpdating(opcode.children);
+    // this.updateWith(new ProvideConsumeContextUpdateOpcode(opcode));
+    // this.pushUpdating(opcode.children);
   }
 
   exit() {
     this[DESTROYABLE_STACK].pop();
-    this.popProvideConsumeContextStack();
     this.elements().popBlock();
     this.popUpdating();
   }
@@ -496,6 +497,26 @@ export default class VM implements PublicVM, InternalVM {
 
   registerProvideConsumeContextProvider(instance: any) {
     this.env.provideConsumeContextTree?.registerProvider(instance);
+    class MyOpcode {
+      constructor(private bucket: object) {}
+
+      evaluate(vm: any) {
+        vm.env.provideConsumeContextTree?.registerProvider(this.bucket);
+      }
+    }
+    this.updateWith(new MyOpcode(instance));
+  }
+
+  registerProvideConsumeContextComponent(instance: any) {
+    this.env.provideConsumeContextTree?.registerComponent(instance);
+    class MyOpcode {
+      constructor(private bucket: object) {}
+
+      evaluate(vm: any) {
+        vm.env.provideConsumeContextTree?.registerComponent(this.bucket);
+      }
+    }
+    this.updateWith(new MyOpcode(instance));
   }
 
   tryUpdating(): Option<UpdatingOpcode[]> {

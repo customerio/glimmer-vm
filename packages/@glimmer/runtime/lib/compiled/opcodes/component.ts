@@ -658,10 +658,13 @@ APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state, op2: _names }) => {
     }
   }
 
-  if ((state as any)?.id) {
-    (vm as any).registerProvideConsumeContextProvider(state);
+  if ((state as any)?.component) {
+    let { component } = state as any;
+
+    (vm as any).env.provideConsumeContextTree.create(component);
+
+    vm.updateWith(new ProvideConsumeContextUpdateOpcode(component));
   }
-  vm.updateWith(new ProvideConsumeContextUpdateOpcode(state));
   vm.stack.push(selfRef);
 });
 
@@ -860,6 +863,20 @@ APPEND_OPCODES.add(Op.DidRenderLayout, (vm, { op1: _state }) => {
     vm.env.didCreate(instance as ComponentInstanceWithCreate);
     vm.updateWith(new DidUpdateLayoutOpcode(instance as ComponentInstanceWithCreate, bounds));
   }
+
+  if ((state as any)?.component) {
+    let { component } = state as any;
+
+    (vm as any).env.provideConsumeContextTree.didRender(component);
+
+    // if (component?._isProvideConsumeContextProvider) {
+    // (vm as any).registerProvideConsumeContextProvider(component);
+    // } else {
+    // (vm as any).registerProvideConsumeContextComponent(component);
+    // }
+
+    vm.updateWith(new ProvideConsumeContextDidRenderOpcode(component));
+  }
 });
 
 APPEND_OPCODES.add(Op.CommitComponentTransaction, (vm) => {
@@ -909,10 +926,18 @@ class DebugRenderTreeDidRenderOpcode implements UpdatingOpcode {
   }
 }
 
-class ProvideConsumeContextUpdateOpcode implements UpdatingOpcode {
-  constructor(private component: ComponentInstanceState) {}
+export class ProvideConsumeContextUpdateOpcode implements UpdatingOpcode {
+  constructor(private bucket: object) {}
 
   evaluate(vm: UpdatingVM) {
-    vm.env.provideConsumeContextTree?.enter(this.component);
+    vm.env.provideConsumeContextTree?.update(this.bucket);
+  }
+}
+
+export class ProvideConsumeContextDidRenderOpcode implements UpdatingOpcode {
+  constructor(private bucket: object) {}
+
+  evaluate(vm: UpdatingVM) {
+    vm.env.provideConsumeContextTree?.didRender(this.bucket);
   }
 }
