@@ -3,6 +3,7 @@ import { ComponentDefinitionState, ComponentInstance, ComponentInstanceState } f
 import { Option } from '../core';
 import { GlimmerTreeChanges, GlimmerTreeConstruction } from '../dom/changes';
 import { DebugRenderTree } from './debug-render-tree';
+import { ProvideConsumeContextTree } from './provide-consume-context-tree';
 import { Owner } from './owner';
 import { ModifierInstance } from './modifier';
 import { WithCreateInstance } from '../..';
@@ -41,4 +42,5 @@ export interface Environment {
 
   isInteractive: boolean;
   debugRenderTree?: DebugRenderTree;
+  provideConsumeContextTree?: ProvideConsumeContextTree;
 }

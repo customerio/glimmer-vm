@@ -658,6 +658,10 @@ APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state, op2: _names }) => {
     }
   }
 
+  if ((state as any)?.id) {
+    (vm as any).registerProvideConsumeContextProvider(state);
+  }
+  vm.updateWith(new ProvideConsumeContextUpdateOpcode(state));
   vm.stack.push(selfRef);
 });
 
@@ -902,5 +906,13 @@ class DebugRenderTreeDidRenderOpcode implements UpdatingOpcode {
 
   evaluate(vm: UpdatingVM) {
     vm.env.debugRenderTree?.didRender(this.bucket, this.bounds);
+  }
+}
+
+class ProvideConsumeContextUpdateOpcode implements UpdatingOpcode {
+  constructor(private component: ComponentInstanceState) {}
+
+  evaluate(vm: UpdatingVM) {
+    vm.env.provideConsumeContextTree?.enter(this.component);
   }
 }

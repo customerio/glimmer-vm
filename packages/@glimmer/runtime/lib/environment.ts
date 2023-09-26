@@ -20,6 +20,7 @@ import { track, updateTag } from '@glimmer/validator';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { RuntimeProgramImpl } from '@glimmer/program';
 import DebugRenderTree from './debug-render-tree';
+import ProvideConsumeContextTree from './provide-consume-context';
 
 export const TRANSACTION: TransactionSymbol = symbol('TRANSACTION');
 
@@ -120,6 +121,7 @@ export class EnvironmentImpl implements Environment {
   public isInteractive = this.delegate.isInteractive;
 
   debugRenderTree = this.delegate.enableDebugTooling ? new DebugRenderTree() : undefined;
+  provideConsumeContextTree = new ProvideConsumeContextTree();
 
   constructor(options: EnvironmentOptions, private delegate: EnvironmentDelegate) {
     if (options.appendOperations) {

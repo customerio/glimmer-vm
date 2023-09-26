@@ -448,12 +448,14 @@ export default class VM implements PublicVM, InternalVM {
   private didEnter(opcode: BlockOpcode) {
     this.associateDestroyable(opcode);
     this[DESTROYABLE_STACK].push(opcode);
+    this.addToProvideConsumeContextStack(opcode);
     this.updateWith(opcode);
     this.pushUpdating(opcode.children);
   }
 
   exit() {
     this[DESTROYABLE_STACK].pop();
+    this.popProvideConsumeContextStack();
     this.elements().popBlock();
     this.popUpdating();
   }
@@ -482,6 +484,18 @@ export default class VM implements PublicVM, InternalVM {
   associateDestroyable(child: Destroyable): void {
     let parent = expect(this[DESTROYABLE_STACK].current, 'Expected destructor parent');
     associateDestroyableChild(parent, child);
+  }
+
+  addToProvideConsumeContextStack(obj: any): void {
+    this.env.provideConsumeContextTree?.enter(obj);
+  }
+
+  popProvideConsumeContextStack() {
+    this.env.provideConsumeContextTree?.exit();
+  }
+
+  registerProvideConsumeContextProvider(instance: any) {
+    this.env.provideConsumeContextTree?.registerProvider(instance);
   }
 
   tryUpdating(): Option<UpdatingOpcode[]> {
