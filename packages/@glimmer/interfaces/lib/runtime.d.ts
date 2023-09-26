@@ -1,6 +1,6 @@
 export * from './runtime/arguments';
 export * from './runtime/debug-render-tree';
-export * from './runtime/provide-consume-context-tree';
+export * from './runtime/provide-consume-context-container';
 export * from './runtime/element';
 export * from './runtime/environment';
 export * from './runtime/helper';

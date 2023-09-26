@@ -658,13 +658,8 @@ APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state, op2: _names }) => {
     }
   }
 
-  if ((state as any)?.component) {
-    let { component } = state as any;
-
-    (vm as any).env.provideConsumeContextTree.create(component);
-
-    vm.updateWith(new ProvideConsumeContextUpdateOpcode(component));
-  }
+  vm.env.provideConsumeContextContainer?.enter(instance);
+  vm.updateWith(new ProvideConsumeContextUpdateOpcode(instance));
   vm.stack.push(selfRef);
 });
 
@@ -864,19 +859,8 @@ APPEND_OPCODES.add(Op.DidRenderLayout, (vm, { op1: _state }) => {
     vm.updateWith(new DidUpdateLayoutOpcode(instance as ComponentInstanceWithCreate, bounds));
   }
 
-  if ((state as any)?.component) {
-    let { component } = state as any;
-
-    (vm as any).env.provideConsumeContextTree.didRender(component);
-
-    // if (component?._isProvideConsumeContextProvider) {
-    // (vm as any).registerProvideConsumeContextProvider(component);
-    // } else {
-    // (vm as any).registerProvideConsumeContextComponent(component);
-    // }
-
-    vm.updateWith(new ProvideConsumeContextDidRenderOpcode(component));
-  }
+  vm.env.provideConsumeContextContainer?.exit(instance);
+  vm.updateWith(new ProvideConsumeContextDidRenderOpcode(instance));
 });
 
 APPEND_OPCODES.add(Op.CommitComponentTransaction, (vm) => {
@@ -926,18 +910,18 @@ class DebugRenderTreeDidRenderOpcode implements UpdatingOpcode {
   }
 }
 
-export class ProvideConsumeContextUpdateOpcode implements UpdatingOpcode {
-  constructor(private bucket: object) {}
+class ProvideConsumeContextUpdateOpcode implements UpdatingOpcode {
+  constructor(private instance: ComponentInstance) {}
 
   evaluate(vm: UpdatingVM) {
-    vm.env.provideConsumeContextTree?.update(this.bucket);
+    vm.env.provideConsumeContextContainer?.enter(this.instance);
   }
 }
 
-export class ProvideConsumeContextDidRenderOpcode implements UpdatingOpcode {
-  constructor(private bucket: object) {}
+class ProvideConsumeContextDidRenderOpcode implements UpdatingOpcode {
+  constructor(private instance: ComponentInstance) {}
 
   evaluate(vm: UpdatingVM) {
-    vm.env.provideConsumeContextTree?.didRender(this.bucket);
+    vm.env.provideConsumeContextContainer?.exit(this.instance);
   }
 }
