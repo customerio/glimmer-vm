@@ -25,6 +25,10 @@ export default class ProvideConsumeContextContainerImpl implements ProvideConsum
         providerContexts = { ...context };
       }
     }
+    // Currently testing this by requiring Provider components to have a string
+    // "id", which is then used to retrieve the context value.
+    // TODO: Similar to the TODO in "enter" below, how do we make this less
+    // coupled to a Provider implementation that doesn't exist in here?
     providerContexts[provider.id] = provider;
 
     this.contexts.set(provider, providerContexts);
@@ -41,6 +45,7 @@ export default class ProvideConsumeContextContainerImpl implements ProvideConsum
       }
     }
   }
+
   get current() {
     return this.stack.current;
   }
